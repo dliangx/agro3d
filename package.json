@@ -36,6 +36,8 @@
 		"vite": "^7.1.10"
 	},
 	"dependencies": {
-		"@maptiler/sdk": "^3.8.0"
+		"@mapbox/mapbox-gl-draw": "^1.5.1",
+		"@maptiler/sdk": "^3.8.0",
+		"@turf/turf": "^7.2.0"
 	}
 }
