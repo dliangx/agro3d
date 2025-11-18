@@ -1,6 +1,4 @@
 <script>
-	// createEventDispatcher 已弃用 -> 使用表单 DOM 节点派发 CustomEvent
-
 	import area from '@turf/area';
 
 	/**
@@ -13,20 +11,21 @@
 	 *   geojson?: GeoJSON | null;
 	 *   action?: string;
 	 *   method?: 'GET' | 'POST';
+	 *   onsubmit?: (event: CustomEvent) => void;
 	 * }}
 	 */
-	const { geojson = null, action = '/api/land', method = 'POST' } = $props();
-
+	const { geojson = null, action = '/api/land', method = 'POST', onsubmit } = $props();
+	console.log(geojson);
 	// 表单字段
 	let parcelName = $state('');
 	let species = $state('');
 	const speciesOptions = ['Apple', 'Pear', 'Olive', 'Mango', 'Pine', 'Other'];
 
 	let imagePreview = $state('');
+	let imageFile = $state(/** @type {File | null} */ (null));
 
 	// 计算面积（平方米），使用 @turf/area，若无 geojson 则为 0
 	/** @type {number} */
-
 	const areaSqm = $derived(geojson ? Math.max(0, area(geojson)) : 0);
 	const areaHa = $derived(areaSqm / 10000);
 
@@ -39,22 +38,49 @@
 		const file = input.files && input.files[0] ? input.files[0] : null;
 		if (file) {
 			imagePreview = URL.createObjectURL(file);
+			imageFile = file;
 		} else {
 			imagePreview = '';
+			imageFile = null;
 		}
 	}
 
-	// 不再使用自定义派发，使用表单原生提交（action/method/enctype）
+	/**
+	 * 处理表单提交
+	 * @param {Event} e
+	 */
+	function handleSubmit(e) {
+		e.preventDefault();
+
+		const formData = {
+			name: parcelName,
+			species: species,
+			areaSqm: areaSqm,
+			areaHa: areaHa,
+			geojson: geojson,
+			image: imageFile
+		};
+
+		// 调用父组件传递的onsubmit回调
+		if (onsubmit) {
+			onsubmit(
+				new CustomEvent('submit', {
+					detail: formData
+				})
+			);
+		}
+	}
 </script>
 
-<form class="form" {action} {method}>
+<form class="form" {action} {method} onsubmit={handleSubmit}>
 	<div class="row">
 		<label for="parcelName">地块名称</label>
 		<input
 			id="parcelName"
 			name="name"
 			type="text"
-			bind:value={parcelName}
+			value={parcelName}
+			oninput={(e) => (parcelName = /** @type {HTMLInputElement} */ (e.target).value)}
 			placeholder="输入地块名称"
 			required
 		/>
@@ -62,8 +88,14 @@
 
 	<div class="row">
 		<label for="species">树木种类</label>
-		<select id="species" name="species" bind:value={species} required>
-			<option value="" disabled hidden>选择树木种类</option>
+		<select
+			id="species"
+			name="species"
+			value={species}
+			onchange={(e) => (species = /** @type {HTMLSelectElement} */ (e.target).value)}
+			required
+		>
+			<option value="" disabled>选择树木种类</option>
 			{#each speciesOptions as opt (opt)}
 				<option value={opt}>{opt}</option>
 			{/each}
@@ -104,10 +136,11 @@
 		max-width: 640px;
 		margin: 12px;
 		padding: 12px;
-		border: 1px solid #e6e6e6;
+		border: 1px solid #333;
 		border-radius: 6px;
-		background: #fff;
-		box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+		background: #000;
+		color: #fff;
+		box-shadow: 0 1px 4px rgba(255, 255, 255, 0.1);
 	}
 	.row {
 		display: flex;
@@ -118,21 +151,30 @@
 	label {
 		width: 120px;
 		font-weight: 600;
+		color: #fff;
 	}
 	input[type='text'],
 	select,
 	input[readonly] {
 		flex: 1;
 		padding: 6px 8px;
-		border: 1px solid #ccc;
+		border: 1px solid #555;
 		border-radius: 4px;
+		background: #111;
+		color: #fff;
+	}
+	input[type='text']:focus,
+	select:focus,
+	input[readonly]:focus {
+		outline: 2px solid #666;
+		outline-offset: 1px;
 	}
 	.image-preview {
 		max-width: 180px;
 		max-height: 120px;
 		object-fit: cover;
 		border-radius: 4px;
-		border: 1px solid #ddd;
+		border: 1px solid #555;
 	}
 	button {
 		padding: 8px 12px;
