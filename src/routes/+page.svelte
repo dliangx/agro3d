@@ -91,15 +91,16 @@
 {#if showModal}
 	<div
 		class="modal-overlay"
-		onclick={closeModal}
+		onkeydown={(e) => e.key === 'Escape' && closeModal()}
 		role="dialog"
 		aria-modal="true"
 		aria-label="地块属性表单"
+		tabindex="0"
 	>
-		<div class="modal-content" onclick={(e) => e.stopPropagation()} role="document">
+		<div class="modal-content" role="document">
 			<div class="modal-header">
 				<h2>地块属性</h2>
-				<button class="close-button" onclick={closeModal}>×</button>
+				<button class="close-button" onclick={closeModal} aria-label="关闭">×</button>
 			</div>
 			<div class="modal-body">
 				<LandAttribute geojson={drawnGeoJSON} onsubmit={handleLandAttributeSubmit} />
