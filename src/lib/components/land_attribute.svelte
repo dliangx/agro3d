@@ -19,8 +19,9 @@
 	// 表单字段
 	let parcelName = $state('');
 	let species = $state('');
+	let stage = $state(''); // Initialize stage as an empty string
 	const speciesOptions = ['Apple', 'Pear', 'Olive', 'Mango', 'Pine', 'Other'];
-
+	const stageOptions = ['Young', 'Mature', 'Old'];
 	let imagePreview = $state('');
 	let imageFile = $state(/** @type {File | null} */ (null));
 
@@ -55,6 +56,7 @@
 		const formData = {
 			name: parcelName,
 			species: species,
+			stage: stage,
 			areaSqm: areaSqm,
 			areaHa: areaHa,
 			geojson: geojson,
@@ -97,6 +99,22 @@
 		>
 			<option value="" disabled>选择树木种类</option>
 			{#each speciesOptions as opt (opt)}
+				<option value={opt}>{opt}</option>
+			{/each}
+		</select>
+	</div>
+
+	<div class="row">
+		<label for="stage">生长阶段</label>
+		<select
+			id="stage"
+			name="stage"
+			value={stage}
+			onchange={(e) => (stage = /** @type {HTMLSelectElement} */ (e.target).value)}
+			required
+		>
+			<option value="" disabled>选择生长阶段</option>
+			{#each stageOptions as opt (opt)}
 				<option value={opt}>{opt}</option>
 			{/each}
 		</select>
