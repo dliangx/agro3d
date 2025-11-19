@@ -23,5 +23,21 @@ export default [
 	{
 		files: ['**/*.svelte', '**/*.svelte.js'],
 		languageOptions: { parserOptions: { svelteConfig } }
+	},
+	{
+		files: ['**/*.ts'],
+		languageOptions: {
+			parser: require('@typescript-eslint/parser'),
+			parserOptions: {
+				ecmaVersion: 'latest',
+				sourceType: 'module'
+			}
+		},
+		plugins: {
+			'@typescript-eslint': require('@typescript-eslint/eslint-plugin')
+		},
+		rules: {
+			...require('@typescript-eslint/eslint-plugin').configs.recommended.rules
+		}
 	}
 ];
