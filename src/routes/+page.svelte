@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import createMap from '$lib/Map.js';
 	import LandAttribute from '$lib/components/land_attribute.svelte';
+	import TreeMenu from '$lib/components/tree_menu.svelte';
 
 	/**
 	 * MapTiler Map 类型别名（用于 JSDoc 提示）
@@ -15,6 +16,24 @@
 	let showModal = $state(false);
 	let drawnGeoJSON = $state(null);
 	let drawInstance = $state(/** @type {any} */ (null));
+
+	// Test data for tree menu
+	const testTreeData = Array.from({ length: 50 }, (_, i) => {
+		const speciesOptions = ['Apple', 'Pear', 'Olive', 'Mango', 'Pine'];
+		const stageOptions = ['1', '2', '3'];
+		const species = speciesOptions[i % speciesOptions.length];
+		const stage = stageOptions[i % stageOptions.length];
+		const area = 1000 + i * 100;
+
+		return {
+			name: `${species}地块${i + 1}`,
+			area: area,
+			species: species,
+			stage: stage,
+			imageFile: '',
+			geojson: null
+		};
+	});
 
 	onMount(() => {
 		mapInstance = createMap('map');
@@ -86,6 +105,7 @@
 
 <div id="container">
 	<div id="map"></div>
+	<TreeMenu items={testTreeData} />
 </div>
 
 {#if showModal}
