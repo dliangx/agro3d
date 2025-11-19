@@ -11,7 +11,7 @@
 	 */
 
 	/** @type {MapTilerMap | null} */
-	let mapInstance = null;
+	let mapInstance = $state(null);
 
 	// Svelte 5 reactive state
 	let showModal = $state(false);

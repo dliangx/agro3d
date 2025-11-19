@@ -59,10 +59,10 @@
 	<h1>🌲 森林API测试页面</h1>
 
 	<div class="controls">
-		<button on:click={runTest} disabled={loading} class="test-button">🌲 开始测试</button>
-		<button on:click={handleClearCache} class="test-button clear">🗑️ 清除缓存</button>
+		<button onclick={runTest} disabled={loading} class="test-button">🌲 开始测试</button>
+		<button onclick={handleClearCache} class="test-button clear">🗑️ 清除缓存</button>
 		<button
-			on:click={handleExportData}
+			onclick={handleExportData}
 			disabled={!testResult || testResult.length === 0}
 			class="test-button export">💾 导出数据</button
 		>
@@ -103,7 +103,7 @@
 				</div>
 
 				<div class="forest-list">
-					{#each testResult as forest, index}
+					{#each testResult as forest, index (index)}
 						<div class="forest-item">
 							<h4>{index + 1}. {forest.name}</h4>
 							<div class="forest-details">
@@ -150,7 +150,7 @@
 	<div class="logs">
 		<h3>📝 运行日志</h3>
 		<div class="log-list">
-			{#each logs as log}
+			{#each logs as log (log.timestamp)}
 				<div class="log-item {log.type}">
 					<span class="timestamp">[{log.timestamp.toLocaleTimeString()}]</span>
 					<span class="message">{log.message}</span>
