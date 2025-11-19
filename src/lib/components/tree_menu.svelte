@@ -2,37 +2,71 @@
 	import TreeContent from './tree_content.svelte';
 	import closeIcon from '$lib/assets/close.png';
 	import menuIcon from '$lib/assets/menu.png';
+	import { Geometry } from '$lib/util/geometry.js';
 
 	/** @type {import('$lib/types/TreeProps').TreeProps[]} */
 	let items = $state([]);
-	let { items: propItems = [] } = $props();
+	let { items: propItems = [], mapInstance, drawPolygon } = $props();
 	$effect(() => {
 		items = propItems;
 	});
 	let expanded = $state(false);
 	let activeIndex = $state(-1);
+	let scrollTimeout = $state(150);
 
 	function handleScroll(e) {
-		const container = e.target;
-		const items = container.querySelectorAll('.content-item');
-		const containerRect = container.getBoundingClientRect();
-		const containerTop = containerRect.top;
+		// 清除之前的超时
+		if (scrollTimeout) {
+			clearTimeout(scrollTimeout);
+		}
 
-		let closestIndex = -1;
-		let closestDistance = Infinity;
+		// 设置新的超时 - 防抖 150ms
+		scrollTimeout = setTimeout(() => {
+			const container = e.target;
+			const itemElements = container.querySelectorAll('.content-item');
+			const containerRect = container.getBoundingClientRect();
+			const containerTop = containerRect.top;
 
-		items.forEach((item, index) => {
-			const itemRect = item.getBoundingClientRect();
-			const itemTop = itemRect.top;
-			const distance = Math.abs(itemTop - containerTop - 50); // 50px offset from top
+			let closestIndex = -1;
+			let closestDistance = Infinity;
 
-			if (distance < closestDistance) {
-				closestDistance = distance;
-				closestIndex = index;
+			itemElements.forEach((item, index) => {
+				const itemRect = item.getBoundingClientRect();
+				const itemTop = itemRect.top;
+				const distance = Math.abs(itemTop - containerTop - 50); // 50px offset from top
+
+				if (distance < closestDistance) {
+					closestDistance = distance;
+					closestIndex = index;
+				}
+			});
+
+			// 只有当索引真正改变时才更新
+			if (closestIndex !== activeIndex) {
+				activeIndex = closestIndex;
+
+				// 如果滚动到新的项目，在地图上绘制对应的多边形
+				if (closestIndex !== -1 && mapInstance && drawPolygon) {
+					const item = items[closestIndex];
+					console.log('Active index changed to:', closestIndex);
+					console.log($state.snapshot(item));
+					if (item && item.geojson) {
+						// 绘制多边形
+						drawPolygon(item.geojson);
+
+						// 计算中心点并飞到此位置
+						const centroid = Geometry.getPolygonCentroid(item.geojson);
+						if (centroid) {
+							mapInstance.flyTo({
+								center: centroid,
+								zoom: 9,
+								duration: 8000
+							});
+						}
+					}
+				}
 			}
-		});
-
-		activeIndex = closestIndex;
+		}, 150);
 	}
 </script>
 

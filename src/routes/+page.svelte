@@ -3,6 +3,7 @@
 	import createMap from '$lib/Map.js';
 	import LandAttribute from '$lib/components/land_attribute.svelte';
 	import TreeMenu from '$lib/components/tree_menu.svelte';
+	import { forestData } from '$lib/data/forestData.js';
 
 	/**
 	 * MapTiler Map 类型别名（用于 JSDoc 提示）
@@ -17,23 +18,74 @@
 	let drawnGeoJSON = $state(null);
 	let drawInstance = $state(/** @type {any} */ (null));
 
-	// Test data for tree menu
-	const testTreeData = Array.from({ length: 50 }, (_, i) => {
-		const speciesOptions = ['Apple', 'Pear', 'Olive', 'Mango', 'Pine'];
-		const stageOptions = ['1', '2', '3'];
-		const species = speciesOptions[i % speciesOptions.length];
-		const stage = stageOptions[i % stageOptions.length];
-		const area = 1000 + i * 100;
+	// Test data for tree menu - using real forest data from forestData.js
+	const testTreeData = forestData;
 
-		return {
-			name: `${species}地块${i + 1}`,
-			area: area,
-			species: species,
-			stage: stage,
-			imageFile: '',
-			geojson: null
-		};
-	});
+	/**
+	 * 在地图上绘制多边形
+	 * @param {Object} geojson - GeoJSON 数据
+	 */
+	function drawPolygon(geojson) {
+		if (!mapInstance || !geojson) return;
+
+		console.log('drawPolygon called with:', geojson);
+
+		// 清除现有的绘制图层
+		if (mapInstance.getLayer('highlight-polygon')) {
+			console.log('Removing existing highlight-polygon layer');
+			mapInstance.removeLayer('highlight-polygon');
+		}
+		if (mapInstance.getLayer('highlight-polygon-outline')) {
+			console.log('Removing existing highlight-polygon-outline layer');
+			mapInstance.removeLayer('highlight-polygon-outline');
+		}
+		if (mapInstance.getSource('highlight-polygon')) {
+			console.log('Removing existing highlight-polygon source');
+			mapInstance.removeSource('highlight-polygon');
+		}
+
+		// 添加新的多边形图层
+		try {
+			mapInstance.addSource('highlight-polygon', {
+				type: 'geojson',
+				data: geojson
+			});
+			console.log('Successfully added highlight-polygon source');
+		} catch (error) {
+			console.error('Error adding source:', error);
+			return;
+		}
+
+		try {
+			mapInstance.addLayer({
+				id: 'highlight-polygon',
+				type: 'fill',
+				source: 'highlight-polygon',
+				paint: {
+					'fill-color': '#ff0000',
+					'fill-opacity': 0.3
+				}
+			});
+			console.log('Successfully added highlight-polygon layer');
+		} catch (error) {
+			console.error('Error adding highlight-polygon layer:', error);
+		}
+
+		try {
+			mapInstance.addLayer({
+				id: 'highlight-polygon-outline',
+				type: 'line',
+				source: 'highlight-polygon',
+				paint: {
+					'line-color': '#ff0000',
+					'line-width': 2
+				}
+			});
+			console.log('Successfully added highlight-polygon-outline layer');
+		} catch (error) {
+			console.error('Error adding highlight-polygon-outline layer:', error);
+		}
+	}
 
 	onMount(() => {
 		mapInstance = createMap('map');
@@ -52,6 +104,7 @@
 				// Listen for draw events
 				mapInstance.on('draw.create', (/** @type {any} */ event) => {
 					const features = event.features;
+					console.log(features);
 					if (features && features.length > 0) {
 						drawnGeoJSON = features[0];
 						showModal = true;
@@ -105,7 +158,7 @@
 
 <div id="container">
 	<div id="map"></div>
-	<TreeMenu items={testTreeData} />
+	<TreeMenu items={testTreeData} {mapInstance} {drawPolygon} />
 </div>
 
 {#if showModal}

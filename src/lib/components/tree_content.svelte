@@ -26,12 +26,6 @@
 		<span class="label">Stage:</span>
 		<span class="value">{stage}</span>
 	</div>
-	{#if geojson}
-		<div class="geojson">
-			<h3>GeoJSON</h3>
-			<pre>{JSON.stringify(geojson, null, 2)}</pre>
-		</div>
-	{/if}
 </div>
 
 <style>
@@ -74,25 +68,5 @@
 	.value {
 		text-align: center;
 		flex: 1;
-	}
-
-	.geojson {
-		margin-top: 15px;
-		padding: 10px;
-		background: rgba(255, 255, 255, 0.1);
-		border-radius: 6px;
-	}
-
-	.geojson h3 {
-		margin: 0 0 10px 0;
-		font-size: 1.1rem;
-	}
-
-	.geojson pre {
-		font-size: 0.9rem;
-		text-align: left;
-		overflow-x: auto;
-		white-space: pre-wrap;
-		word-wrap: break-word;
 	}
 </style>
