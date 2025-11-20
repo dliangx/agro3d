@@ -1,14 +1,6 @@
 <script>
 	import treeDefault from '$lib/assets/tree_default.png';
-	/** @type {import('$lib/types/TreeProps').TreeProps} */
-	let {
-		name = '',
-		area = 0.0,
-		species = '',
-		imageFile = '',
-		geojson = null,
-		stage = ''
-	} = $props();
+	let { name = '', area = 0.0, species = '', imageFile = '', stage = '' } = $props();
 </script>
 
 <div class="tree-content">

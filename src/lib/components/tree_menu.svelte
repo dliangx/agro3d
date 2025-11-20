@@ -4,12 +4,8 @@
 	import menuIcon from '$lib/assets/menu.png';
 	import { Geometry } from '$lib/util/geometry.js';
 
-	/** @type {import('$lib/types/TreeProps').TreeProps[]} */
-	let items = $state([]);
-	let { items: propItems = [], mapInstance, drawPolygon } = $props();
-	$effect(() => {
-		items = propItems;
-	});
+	let { items = [], mapInstance, drawPolygon } = $props();
+
 	let expanded = $state(false);
 	let activeIndex = $state(-1);
 	let scrollTimeout = $state(150);
@@ -54,12 +50,34 @@
 						// 绘制多边形
 						drawPolygon(item.geojson);
 
-						// 计算中心点并飞到此位置
+						// 计算中心点和边界框并飞到此位置
 						const centroid = Geometry.getPolygonCentroid(item.geojson);
-						if (centroid) {
+						const bbox = Geometry.getPolygonBoundingBox(item.geojson);
+
+						if (centroid && bbox) {
+							// 根据边界框大小计算合适的缩放级别
+							const [minLng, minLat, maxLng, maxLat] = bbox;
+							const width = maxLng - minLng;
+							const height = maxLat - minLat;
+							const maxDimension = Math.max(width, height);
+
+							// 根据多边形大小动态计算缩放级别
+							let zoom;
+							if (maxDimension > 1.0) {
+								zoom = 7; // 非常大的区域
+							} else if (maxDimension > 0.5) {
+								zoom = 8; // 大区域
+							} else if (maxDimension > 0.2) {
+								zoom = 9; // 中等区域
+							} else if (maxDimension > 0.1) {
+								zoom = 10; // 小区域
+							} else {
+								zoom = 11; // 非常小的区域
+							}
+
 							mapInstance.flyTo({
 								center: centroid,
-								zoom: 9,
+								zoom: zoom,
 								duration: 8000
 							});
 						}
