@@ -242,33 +242,21 @@ function convertOSMToGeoJSON(osmData) {
 }
 
 // 获取中国森林数据
-export async function fetchChinaForestData() {
+export async function fetchChinaForestData(
+	south = 39.95,
+	west = 116.15,
+	north = 40.05,
+	east = 116.35
+) {
 	// 使用更具体的查询区域 - 北京香山、颐和园等森林区域
 	const testBbox = {
-		south: 39.95,
-		west: 116.15,
-		north: 40.05,
-		east: 116.35
+		south,
+		west,
+		north,
+		east
 	};
 
 	return await fetchForestDataFromOSM(testBbox.south, testBbox.west, testBbox.north, testBbox.east);
-}
-
-// 获取完整中国区域森林数据
-export async function fetchChinaForestDataFull() {
-	const chinaBbox = {
-		south: 18.0,
-		west: 73.0,
-		north: 53.0,
-		east: 135.0
-	};
-
-	return await fetchForestDataFromOSM(
-		chinaBbox.south,
-		chinaBbox.west,
-		chinaBbox.north,
-		chinaBbox.east
-	);
 }
 
 // 获取城市森林数据
@@ -385,18 +373,9 @@ function getSpeciesFromTags(properties) {
 	return '混合林';
 }
 
-// 配置管理函数
-export function setConfig(newConfig) {
-	Object.assign(CONFIG, newConfig);
-}
-
-export function getConfig() {
-	return { ...CONFIG };
-}
-
 // 测试函数
-export async function testForestAPI() {
-	const data = await fetchChinaForestData();
+export async function testForestAPI(south = 39.95, west = 116.15, north = 40.05, east = 116.35) {
+	const data = await fetchChinaForestData(south, west, north, east);
 	const appData = convertToAppFormat(data);
 
 	const totalArea = appData.reduce((sum, item) => sum + item.area, 0);

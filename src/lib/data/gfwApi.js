@@ -1,47 +1,59 @@
-// @ts-nocheck
+// Global Forest Watch API 模拟数据脚本
+// 用于测试森林覆盖和变化数据
 
-// Global Forest Watch API 请求脚本
-// 用于获取全球森林覆盖和变化数据
+// 文件保存功能
+async function saveDataToFile(data, filename) {
+	try {
+		// 使用 ES 模块方式保存文件
+		const fs = await import('fs');
+		const path = await import('path');
+		fs.writeFileSync(path.join(process.cwd(), filename), JSON.stringify(data, null, 2));
+		console.log(`💾 数据已保存到文件: ${filename}`);
+		return true;
+	} catch (error) {
+		console.error('保存文件失败:', error);
+		return false;
+	}
+}
 
 /**
- * 获取 GFW 森林覆盖数据
+ * 获取模拟的 GFW 森林覆盖数据
  * @param {number} lat - 纬度
  * @param {number} lng - 经度
  * @param {number} radius - 半径（公里）
  * @returns {Promise<Object>} 森林覆盖数据
  */
 export async function fetchGFWForestCover(lat, lng, radius = 10) {
-	const url = `https://data-api.globalforestwatch.org/forest-cover`;
+	console.log(`🌲 获取模拟森林覆盖数据 - 位置: [${lat}, ${lng}], 半径: ${radius}km`);
 
-	const params = {
-		lat: lat,
-		lng: lng,
-		radius: radius,
-		year: new Date().getFullYear() - 1 // 去年的数据
-	};
+	// 模拟 API 延迟
+	await new Promise((resolve) => setTimeout(resolve, 500));
 
-	try {
-		const response = await fetch(`${url}?${new URLSearchParams(params)}`, {
-			method: 'GET',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
+	return {
+		data: [
+			{
+				area_ha: Math.random() * 500 + 100,
+				forest_cover_percent: Math.random() * 50 + 30,
+				year: new Date().getFullYear() - 1,
+				geometry: {
+					type: 'Polygon',
+					coordinates: [
+						[
+							[lng - 0.1, lat - 0.1],
+							[lng + 0.1, lat - 0.1],
+							[lng + 0.1, lat + 0.1],
+							[lng - 0.1, lat + 0.1],
+							[lng - 0.1, lat - 0.1]
+						]
+					]
+				}
 			}
-		});
-
-		if (!response.ok) {
-			throw new Error(`GFW API error: ${response.status}`);
-		}
-
-		return await response.json();
-	} catch (error) {
-		console.error('Error fetching GFW forest cover:', error);
-		throw error;
-	}
+		]
+	};
 }
 
 /**
- * 获取森林损失数据
+ * 获取模拟的森林损失数据
  * @param {number} south - 南边界
  * @param {number} west - 西边界
  * @param {number} north - 北边界
@@ -58,36 +70,55 @@ export async function fetchGFWForestLoss(
 	startYear = 2000,
 	endYear = new Date().getFullYear() - 1
 ) {
-	const url = `https://data-api.globalforestwatch.org/forest-loss`;
+	console.log(`🌲 获取模拟森林损失数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
 
-	const params = {
-		geostore: `${south},${west},${north},${east}`,
-		period: `${startYear}-${endYear}`,
-		threshold: 30 // 置信度阈值
-	};
+	await new Promise((resolve) => setTimeout(resolve, 300));
 
-	try {
-		const response = await fetch(`${url}?${new URLSearchParams(params)}`, {
-			method: 'GET',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			}
-		});
-
-		if (!response.ok) {
-			throw new Error(`GFW API error: ${response.status}`);
+	const years = [];
+	for (let year = startYear; year <= endYear; year++) {
+		if (Math.random() > 0.7) {
+			// 30% 的年份有损失数据
+			years.push({
+				year: year,
+				loss_area_ha: Math.random() * 50 + 10,
+				geometry: {
+					type: 'Polygon',
+					coordinates: [
+						[
+							[
+								west + Math.random() * (east - west) * 0.5,
+								south + Math.random() * (north - south) * 0.5
+							],
+							[
+								west + Math.random() * (east - west) * 0.5 + 0.05,
+								south + Math.random() * (north - south) * 0.5
+							],
+							[
+								west + Math.random() * (east - west) * 0.5 + 0.05,
+								south + Math.random() * (north - south) * 0.5 + 0.05
+							],
+							[
+								west + Math.random() * (east - west) * 0.5,
+								south + Math.random() * (north - south) * 0.5 + 0.05
+							],
+							[
+								west + Math.random() * (east - west) * 0.5,
+								south + Math.random() * (north - south) * 0.5
+							]
+						]
+					]
+				}
+			});
 		}
-
-		return await response.json();
-	} catch (error) {
-		console.error('Error fetching GFW forest loss:', error);
-		throw error;
 	}
+
+	return {
+		data: years
+	};
 }
 
 /**
- * 获取森林增益数据
+ * 获取模拟的森林增益数据
  * @param {number} south - 南边界
  * @param {number} west - 西边界
  * @param {number} north - 北边界
@@ -95,35 +126,49 @@ export async function fetchGFWForestLoss(
  * @returns {Promise<Object>} 森林增益数据
  */
 export async function fetchGFWForestGain(south, west, north, east) {
-	const url = `https://data-api.globalforestwatch.org/forest-gain`;
+	console.log(`🌲 获取模拟森林增益数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
 
-	const params = {
-		geostore: `${south},${west},${north},${east}`,
-		period: '2000-2020' // GFW 增益数据的时间范围
-	};
+	await new Promise((resolve) => setTimeout(resolve, 400));
 
-	try {
-		const response = await fetch(`${url}?${new URLSearchParams(params)}`, {
-			method: 'GET',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
+	return {
+		data: [
+			{
+				gain_area_ha: Math.random() * 20 + 5,
+				period: '2000-2020',
+				geometry: {
+					type: 'Polygon',
+					coordinates: [
+						[
+							[
+								west + Math.random() * (east - west) * 0.3,
+								south + Math.random() * (north - south) * 0.3
+							],
+							[
+								west + Math.random() * (east - west) * 0.3 + 0.03,
+								south + Math.random() * (north - south) * 0.3
+							],
+							[
+								west + Math.random() * (east - west) * 0.3 + 0.03,
+								south + Math.random() * (north - south) * 0.3 + 0.03
+							],
+							[
+								west + Math.random() * (east - west) * 0.3,
+								south + Math.random() * (north - south) * 0.3 + 0.03
+							],
+							[
+								west + Math.random() * (east - west) * 0.3,
+								south + Math.random() * (north - south) * 0.3
+							]
+						]
+					]
+				}
 			}
-		});
-
-		if (!response.ok) {
-			throw new Error(`GFW API error: ${response.status}`);
-		}
-
-		return await response.json();
-	} catch (error) {
-		console.error('Error fetching GFW forest gain:', error);
-		throw error;
-	}
+		]
+	};
 }
 
 /**
- * 获取生物多样性热点区域
+ * 获取模拟的生物多样性数据
  * @param {number} south - 南边界
  * @param {number} west - 西边界
  * @param {number} north - 北边界
@@ -131,72 +176,74 @@ export async function fetchGFWForestGain(south, west, north, east) {
  * @returns {Promise<Object>} 生物多样性数据
  */
 export async function fetchGFWBiodiversity(south, west, north, east) {
-	const url = `https://data-api.globalforestwatch.org/biodiversity`;
+	console.log(`🌲 获取模拟生物多样性数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
 
-	const params = {
-		geostore: `${south},${west},${north},${east}`,
-		layers: ['species_richness', 'protected_areas'] // 请求的图层
-	};
+	await new Promise((resolve) => setTimeout(resolve, 350));
 
-	try {
-		const response = await fetch(`${url}?${new URLSearchParams(params)}`, {
-			method: 'GET',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			}
-		});
-
-		if (!response.ok) {
-			throw new Error(`GFW API error: ${response.status}`);
+	return {
+		data: {
+			species_richness: Math.random() * 100 + 50,
+			protected_areas: Math.floor(Math.random() * 5) + 1,
+			hotspots: [
+				{
+					name: '生物多样性热点区域',
+					richness_score: Math.random() * 10 + 5,
+					geometry: {
+						type: 'Polygon',
+						coordinates: [
+							[
+								[
+									west + Math.random() * (east - west) * 0.7,
+									south + Math.random() * (north - south) * 0.7
+								],
+								[
+									west + Math.random() * (east - west) * 0.7 + 0.02,
+									south + Math.random() * (north - south) * 0.7
+								],
+								[
+									west + Math.random() * (east - west) * 0.7 + 0.02,
+									south + Math.random() * (north - south) * 0.7 + 0.02
+								],
+								[
+									west + Math.random() * (east - west) * 0.7,
+									south + Math.random() * (north - south) * 0.7 + 0.02
+								],
+								[
+									west + Math.random() * (east - west) * 0.7,
+									south + Math.random() * (north - south) * 0.7
+								]
+							]
+						]
+					}
+				}
+			]
 		}
-
-		return await response.json();
-	} catch (error) {
-		console.error('Error fetching GFW biodiversity:', error);
-		throw error;
-	}
+	};
 }
 
 /**
- * 获取碳储量数据
+ * 获取模拟的碳储量数据
  * @param {number} lat - 纬度
  * @param {number} lng - 经度
  * @param {number} radius - 半径（公里）
  * @returns {Promise<Object>} 碳储量数据
  */
 export async function fetchGFWCarbon(lat, lng, radius = 10) {
-	const url = `https://data-api.globalforestwatch.org/carbon`;
+	console.log(`🌲 获取模拟碳储量数据 - 位置: [${lat}, ${lng}], 半径: ${radius}km`);
 
-	const params = {
-		lat: lat,
-		lng: lng,
-		radius: radius,
-		year: new Date().getFullYear() - 1
-	};
+	await new Promise((resolve) => setTimeout(resolve, 250));
 
-	try {
-		const response = await fetch(`${url}?${new URLSearchParams(params)}`, {
-			method: 'GET',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			}
-		});
-
-		if (!response.ok) {
-			throw new Error(`GFW API error: ${response.status}`);
+	return {
+		data: {
+			carbon_stock_tons: Math.random() * 10000 + 5000,
+			carbon_density: Math.random() * 50 + 100,
+			year: new Date().getFullYear() - 1
 		}
-
-		return await response.json();
-	} catch (error) {
-		console.error('Error fetching GFW carbon data:', error);
-		throw error;
-	}
+	};
 }
 
 /**
- * 获取火灾风险数据
+ * 获取模拟的火灾风险数据
  * @param {number} south - 南边界
  * @param {number} west - 西边界
  * @param {number} north - 北边界
@@ -204,38 +251,114 @@ export async function fetchGFWCarbon(lat, lng, radius = 10) {
  * @returns {Promise<Object>} 火灾风险数据
  */
 export async function fetchGFWFireRisk(south, west, north, east) {
-	const url = `https://data-api.globalforestwatch.org/fire-risk`;
+	console.log(`🌲 获取模拟火灾风险数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
 
-	const params = {
-		geostore: `${south},${west},${north},${east}`,
-		period: '7d' // 7天内的数据
-	};
+	await new Promise((resolve) => setTimeout(resolve, 200));
 
-	try {
-		const response = await fetch(`${url}?${new URLSearchParams(params)}`, {
-			method: 'GET',
-			headers: {
-				Accept: 'application/json',
-				'Content-Type': 'application/json'
-			}
-		});
-
-		if (!response.ok) {
-			throw new Error(`GFW API error: ${response.status}`);
+	return {
+		data: {
+			fire_risk_level: Math.random() > 0.7 ? 'high' : Math.random() > 0.4 ? 'medium' : 'low',
+			active_fires: Math.floor(Math.random() * 3),
+			risk_areas: [
+				{
+					risk_score: Math.random() * 10,
+					geometry: {
+						type: 'Polygon',
+						coordinates: [
+							[
+								[
+									west + Math.random() * (east - west) * 0.8,
+									south + Math.random() * (north - south) * 0.8
+								],
+								[
+									west + Math.random() * (east - west) * 0.8 + 0.01,
+									south + Math.random() * (north - south) * 0.8
+								],
+								[
+									west + Math.random() * (east - west) * 0.8 + 0.01,
+									south + Math.random() * (north - south) * 0.8 + 0.01
+								],
+								[
+									west + Math.random() * (east - west) * 0.8,
+									south + Math.random() * (north - south) * 0.8 + 0.01
+								],
+								[
+									west + Math.random() * (east - west) * 0.8,
+									south + Math.random() * (north - south) * 0.8
+								]
+							]
+						]
+					}
+				}
+			]
 		}
-
-		return await response.json();
-	} catch (error) {
-		console.error('Error fetching GFW fire risk:', error);
-		throw error;
-	}
+	};
 }
 
 /**
- * 获取中国主要森林区域的数据
+ * 获取指定区域的森林数据并自动保存
+ * @param {number} south - 南边界
+ * @param {number} west - 西边界
+ * @param {number} north - 北边界
+ * @param {number} east - 东边界
+ * @returns {Promise<Object>} 森林数据和应用格式数据
+ */
+export async function fetchRegionGFWData(south, west, north, east) {
+	console.log(`🌲 获取 GFW 森林数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
+
+	// 获取指定区域的森林数据
+	const [cover, loss, biodiversity] = await Promise.all([
+		fetchGFWForestCover((south + north) / 2, (west + east) / 2, 50),
+		fetchGFWForestLoss(south, west, north, east),
+		fetchGFWBiodiversity(south, west, north, east)
+	]);
+
+	const regionData = { cover, loss, biodiversity };
+	const appData = convertGFWToAppFormat(regionData);
+
+	console.log(`✅ 成功获取 ${appData.length} 个森林区域`);
+
+	// 计算统计信息
+	const totalArea = appData.reduce((sum, item) => sum + item.area, 0);
+	console.log(`📊 总面积: ${(totalArea / 1000000).toFixed(2)} km²`);
+
+	// 自动保存数据到文件
+	const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+	const filename = `gfw-forest-data-${timestamp}.json`;
+
+	const outputData = {
+		timestamp: new Date().toISOString(),
+		bbox: { south, west, north, east },
+		data: appData,
+		statistics: {
+			totalAreas: appData.length,
+			totalArea: totalArea,
+			totalAreaKm2: totalArea / 1000000,
+			averageArea: totalArea / appData.length
+		},
+		metadata: {
+			source: 'Global Forest Watch API (模拟数据)',
+			dataTypes: ['森林覆盖', '森林损失', '生物多样性'],
+			processingTime: new Date().toISOString()
+		}
+	};
+
+	saveDataToFile(outputData, filename);
+
+	return {
+		regionData,
+		appData,
+		statistics: outputData.statistics
+	};
+}
+
+/**
+ * 获取中国主要森林区域的模拟数据
  * @returns {Promise<Object>} 综合森林数据
  */
 export async function fetchChinaGFWData() {
+	console.log('🌲 开始获取中国森林区域 GFW 模拟数据...');
+
 	// 中国主要森林区域边界
 	const forestRegions = {
 		东北林区: { south: 41.0, west: 120.0, north: 53.0, east: 135.0 },
@@ -247,6 +370,8 @@ export async function fetchChinaGFWData() {
 	const results = {};
 
 	for (const [region, bbox] of Object.entries(forestRegions)) {
+		console.log(`📊 处理 ${region} 数据...`);
+
 		try {
 			const [cover, loss, biodiversity] = await Promise.all([
 				fetchGFWForestCover((bbox.south + bbox.north) / 2, (bbox.west + bbox.east) / 2, 100),
@@ -260,13 +385,95 @@ export async function fetchChinaGFWData() {
 				biodiversity,
 				bbox
 			};
+
+			console.log(`✅ ${region} 数据获取完成`);
 		} catch (error) {
-			console.error(`Error fetching data for ${region}:`, error);
+			console.error(`❌ ${region} 数据获取失败:`, error.message);
 			results[region] = { error: error.message };
 		}
 	}
 
-	return results;
+	console.log('🎉 所有中国森林区域数据获取完成');
+}
+
+/**
+ * 获取指定区域的 GFW 森林数据并自动保存
+ * @param {number} south - 南边界
+ * @param {number} west - 西边界
+ * @param {number} north - 北边界
+ * @param {number} east - 东边界
+ * @param {string} dataTypes - 数据类型: 1=森林覆盖, 2=森林损失, 3=生物多样性
+ * @returns {Promise<Object>} 森林数据
+ */
+export async function fetchGFWRegionData(south, west, north, east, dataTypes = '123') {
+	console.log(`🌲 获取 GFW 森林数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
+	console.log(`📊 数据类型: ${dataTypes} (1=森林覆盖, 2=森林损失, 3=生物多样性)`);
+
+	// 根据数据类型决定获取哪些数据
+	const promises = [];
+	const selectedDataTypes = [];
+	const regionData = {};
+
+	if (dataTypes.includes('1')) {
+		promises.push(fetchGFWForestCover((south + north) / 2, (west + east) / 2, 50));
+		selectedDataTypes.push('森林覆盖');
+	}
+	if (dataTypes.includes('2')) {
+		promises.push(fetchGFWForestLoss(south, west, north, east));
+		selectedDataTypes.push('森林损失');
+	}
+	if (dataTypes.includes('3')) {
+		promises.push(fetchGFWBiodiversity(south, west, north, east));
+		selectedDataTypes.push('生物多样性');
+	}
+
+	// 获取数据
+	const results = await Promise.all(promises);
+
+	// 将结果分配到对应的字段
+	let resultIndex = 0;
+	if (dataTypes.includes('1')) {
+		regionData.cover = results[resultIndex++];
+	}
+	if (dataTypes.includes('2')) {
+		regionData.loss = results[resultIndex++];
+	}
+	if (dataTypes.includes('3')) {
+		regionData.biodiversity = results[resultIndex++];
+	}
+
+	const appData = convertGFWToAppFormat(regionData);
+
+	console.log(`✅ 成功获取 ${appData.length} 个森林区域`);
+
+	// 计算统计信息
+	const totalArea = appData.reduce((sum, item) => sum + item.area, 0);
+	console.log(`📊 总面积: ${(totalArea / 1000000).toFixed(2)} km²`);
+
+	// 自动保存数据到文件
+	const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+	const filename = `gfw-forest-data-${timestamp}.json`;
+
+	const outputData = {
+		timestamp: new Date().toISOString(),
+		bbox: { south, west, north, east },
+		data: appData,
+		statistics: {
+			totalAreas: appData.length,
+			totalArea: totalArea,
+			totalAreaKm2: totalArea / 1000000,
+			averageArea: totalArea / appData.length
+		},
+		metadata: {
+			source: 'Global Forest Watch API (模拟数据)',
+			dataTypes: selectedDataTypes,
+			processingTime: new Date().toISOString()
+		}
+	};
+
+	await saveDataToFile(outputData, filename);
+
+	return appData;
 }
 
 /**
@@ -325,25 +532,46 @@ export function convertGFWToAppFormat(gfwData) {
 		});
 	}
 
+	// 处理生物多样性热点区域
+	if (gfwData.biodiversity && gfwData.biodiversity.data && gfwData.biodiversity.data.hotspots) {
+		gfwData.biodiversity.data.hotspots.forEach((hotspot, index) => {
+			appData.push({
+				name: `生物多样性热点 ${index + 1}`,
+				area: 1000000, // 默认面积
+				species: '多样生态系统',
+				stage: '3',
+				imageFile: '',
+				geojson: {
+					type: 'Feature',
+					properties: {
+						name: `生物多样性热点 ${index + 1}`,
+						richness_score: hotspot.richness_score,
+						protected_areas: gfwData.biodiversity.data.protected_areas
+					},
+					geometry: hotspot.geometry
+				}
+			});
+		});
+	}
+
 	return appData;
 }
 
 // 使用示例
-/*
-// 获取中国森林数据
-fetchChinaGFWData()
-  .then(data => {
-    console.log('GFW 中国森林数据:', data);
-    const appData = convertGFWToAppFormat(data['东北林区']);
-    console.log('应用格式数据:', appData);
-  })
-  .catch(error => {
-    console.error('获取 GFW 数据失败:', error);
-  });
+if (import.meta.url === `file://${process.argv[1]}`) {
+	// 从命令行参数获取坐标或使用默认值
+	const south = process.argv[2] ? parseFloat(process.argv[2]) : 39.95;
+	const west = process.argv[3] ? parseFloat(process.argv[3]) : 116.15;
+	const north = process.argv[4] ? parseFloat(process.argv[4]) : 40.05;
+	const east = process.argv[5] ? parseFloat(process.argv[5]) : 116.35;
+	const dataTypes = process.argv[6] || '123';
 
-// 获取特定区域的森林覆盖
-fetchGFWForestCover(30.5928, 114.3055, 50) // 武汉周边50公里
-  .then(data => {
-    console.log('武汉森林覆盖:', data);
-  });
-*/
+	await fetchGFWRegionData(south, west, north, east, dataTypes)
+		.then((data) => {
+			console.log('🎉 GFW 森林数据获取完成');
+		})
+		.catch((error) => {
+			console.error('获取 GFW 数据失败:', error);
+			process.exit(1);
+		});
+}
