@@ -1,5 +1,5 @@
 // @ts-nocheck
-import logger from '$lib/util/logger.js';
+import logger from '../util/logger.js';
 
 // Node.js 兼容的 fetch
 const fetch = globalThis.fetch || (await import('node-fetch')).default;
