@@ -4,26 +4,13 @@
 const fetch = globalThis.fetch || (await import('node-fetch')).default;
 
 // 文件保存功能
-function saveDataToFile(data, filename) {
+async function saveDataToFile(data, filename) {
 	try {
-		if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-			// Node.js 环境
-			const fs = require('fs');
-			const path = require('path');
-			fs.writeFileSync(path.join(process.cwd(), filename), JSON.stringify(data, null, 2));
-			console.log(`💾 数据已保存到文件: ${filename}`);
-		} else {
-			// 浏览器环境
-			const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-			const url = URL.createObjectURL(blob);
-			const a = document.createElement('a');
-			a.href = url;
-			a.download = filename;
-			document.body.appendChild(a);
-			a.click();
-			document.body.removeChild(a);
-			URL.revokeObjectURL(url);
-		}
+		// 使用 ES 模块方式保存文件
+		const fs = await import('fs');
+		const path = await import('path');
+		fs.writeFileSync(path.join(process.cwd(), filename), JSON.stringify(data, null, 2));
+		console.log(`💾 数据已保存到文件: ${filename}`);
 		return true;
 	} catch (error) {
 		console.error('保存文件失败:', error);
@@ -410,7 +397,25 @@ export async function testForestAPI(south = 39.95, west = 116.15, north = 40.05,
 			processingTime: new Date().toISOString()
 		}
 	};
-	saveDataToFile(finalData, `forest-app-data-${timestamp}.json`);
+	await saveDataToFile(finalData, `forest-app-data-${timestamp}.json`);
 
 	return appData;
+}
+
+// 直接执行功能
+if (import.meta.url === `file://${process.argv[1]}`) {
+	// 从命令行参数获取坐标或使用默认值
+	const south = process.argv[2] ? parseFloat(process.argv[2]) : 39.95;
+	const west = process.argv[3] ? parseFloat(process.argv[3]) : 116.15;
+	const north = process.argv[4] ? parseFloat(process.argv[4]) : 40.05;
+	const east = process.argv[5] ? parseFloat(process.argv[5]) : 116.35;
+
+	testForestAPI(south, west, north, east)
+		.then((data) => {
+			console.log('🎉 森林数据获取完成');
+		})
+		.catch((error) => {
+			console.error('获取森林数据失败:', error);
+			process.exit(1);
+		});
 }
