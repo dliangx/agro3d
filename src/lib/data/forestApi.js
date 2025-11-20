@@ -1,4 +1,5 @@
 // @ts-nocheck
+import logger from '$lib/util/logger.js';
 
 // Node.js 兼容的 fetch
 const fetch = globalThis.fetch || (await import('node-fetch')).default;
@@ -10,10 +11,9 @@ async function saveDataToFile(data, filename) {
 		const fs = await import('fs');
 		const path = await import('path');
 		fs.writeFileSync(path.join(process.cwd(), filename), JSON.stringify(data, null, 2));
-		console.log(`💾 数据已保存到文件: ${filename}`);
 		return true;
 	} catch (error) {
-		console.error('保存文件失败:', error);
+		logger.error('保存文件失败:', error);
 		return false;
 	}
 }
@@ -23,26 +23,10 @@ const CONFIG = {
 	retryEndpoints: true
 };
 
-// Node.js 兼容的 localStorage
-const localStorage = {
-	getItem: (key) => {
-		if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-			return null; // Node.js 环境不使用缓存
-		}
-		return globalThis.localStorage?.getItem(key);
-	},
-	setItem: (key, value) => {
-		if (typeof process !== 'undefined' && process.versions && process.versions.node) {
-			return; // Node.js 环境不使用缓存
-		}
-		globalThis.localStorage?.setItem(key, value);
-	}
-};
-
 // 从OSM获取森林数据
 async function fetchForestDataFromOSM(south, west, north, east) {
-	console.log('🌲 开始从 OSM 获取森林数据...');
-	console.log(`📐 查询区域: 南${south}, 西${west}, 北${north}, 东${east}`);
+	logger.info('🌲 开始从 OSM 获取森林数据...');
+	logger.info(`📐 查询区域: 南${south}, 西${west}, 北${north}, 东${east}`);
 
 	const overpassQuery = `
     [out:json][timeout:90];
@@ -73,7 +57,7 @@ async function fetchForestDataFromOSM(south, west, north, east) {
 
 	for (const endpoint of endpoints) {
 		try {
-			console.log(`🔄 尝试连接到: ${endpoint}`);
+			logger.info(`🔄 尝试连接到: ${endpoint}`);
 			response = await fetch(endpoint, {
 				method: 'POST',
 				headers: {
@@ -83,20 +67,20 @@ async function fetchForestDataFromOSM(south, west, north, east) {
 			});
 
 			if (response.ok) {
-				console.log(`✅ 成功连接到: ${endpoint}`);
+				logger.info(`✅ 成功连接到: ${endpoint}`);
 				break;
 			} else if (response.status === 429) {
-				console.warn(`⚠️ ${endpoint} 速率限制`);
+				logger.warn(`⚠️ ${endpoint} 速率限制`);
 				continue;
 			} else if (response.status === 400) {
-				console.warn(`⚠️ ${endpoint} 请求错误`);
+				logger.warn(`⚠️ ${endpoint} 请求错误`);
 				continue;
 			} else {
-				console.warn(`⚠️ ${endpoint} 返回错误: ${response.status}`);
+				logger.warn(`⚠️ ${endpoint} 返回错误: ${response.status}`);
 				continue;
 			}
 		} catch (error) {
-			console.warn(`⚠️ ${endpoint} 连接失败:`, error.message);
+			logger.warn(`⚠️ ${endpoint} 连接失败:`, error.message);
 			continue;
 		}
 	}
@@ -110,21 +94,21 @@ async function fetchForestDataFromOSM(south, west, north, east) {
 		const responseText = await response.text();
 
 		if (responseText.trim().startsWith('<?xml') || responseText.trim().startsWith('<osm')) {
-			console.error('❌ API 返回了 XML 错误信息:', responseText.substring(0, 200));
+			logger.error('❌ API 返回了 XML 错误信息:', responseText.substring(0, 200));
 			throw new Error(
 				`Overpass API 错误: ${responseText.split('<description>')[1]?.split('</description>')[0] || '未知错误'}`
 			);
 		}
 
 		data = JSON.parse(responseText);
-		console.log(`📊 API 返回数据: ${data.elements?.length || 0} 个元素`);
+		logger.info(`📊 API 返回数据: ${data.elements?.length || 0} 个元素`);
 	} catch (parseError) {
-		console.error('❌ 解析 API 响应失败:', parseError);
+		logger.error('❌ 解析 API 响应失败:', parseError);
 		throw new Error(`API 响应解析失败: ${parseError.message}`);
 	}
 
 	const geoJSON = convertOSMToGeoJSON(data);
-	console.log(`✅ 成功转换 ${geoJSON.features?.length || 0} 个要素`);
+	logger.info(`✅ 成功转换 ${geoJSON.features?.length || 0} 个要素`);
 
 	return geoJSON;
 }
@@ -134,14 +118,14 @@ function convertOSMToGeoJSON(osmData) {
 	const features = [];
 
 	if (!osmData.elements || osmData.elements.length === 0) {
-		console.warn('⚠️ OSM 数据为空');
+		logger.warn('⚠️ OSM 数据为空');
 		return {
 			type: 'FeatureCollection',
 			features: []
 		};
 	}
 
-	console.log(`🔧 开始转换 OSM 数据: ${osmData.elements.length} 个元素`);
+	logger.info(`🔧 开始转换 OSM 数据: ${osmData.elements.length} 个元素`);
 
 	osmData.elements.forEach((element) => {
 		let geometry = null;
@@ -411,11 +395,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 	const east = process.argv[5] ? parseFloat(process.argv[5]) : 116.35;
 
 	testForestAPI(south, west, north, east)
-		.then((data) => {
-			console.log('🎉 森林数据获取完成');
+		.then(() => {
+			logger.info('🎉 森林数据获取完成');
 		})
 		.catch((error) => {
-			console.error('获取森林数据失败:', error);
+			logger.error('获取森林数据失败:', error);
 			process.exit(1);
 		});
 }

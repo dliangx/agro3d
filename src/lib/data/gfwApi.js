@@ -8,10 +8,9 @@ async function saveDataToFile(data, filename) {
 		const fs = await import('fs');
 		const path = await import('path');
 		fs.writeFileSync(path.join(process.cwd(), filename), JSON.stringify(data, null, 2));
-		console.log(`💾 数据已保存到文件: ${filename}`);
+
 		return true;
-	} catch (error) {
-		console.error('保存文件失败:', error);
+	} catch {
 		return false;
 	}
 }
@@ -23,9 +22,7 @@ async function saveDataToFile(data, filename) {
  * @param {number} radius - 半径（公里）
  * @returns {Promise<Object>} 森林覆盖数据
  */
-export async function fetchGFWForestCover(lat, lng, radius = 10) {
-	console.log(`🌲 获取模拟森林覆盖数据 - 位置: [${lat}, ${lng}], 半径: ${radius}km`);
-
+export async function fetchGFWForestCover(lat, lng) {
 	// 模拟 API 延迟
 	await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -70,8 +67,6 @@ export async function fetchGFWForestLoss(
 	startYear = 2000,
 	endYear = new Date().getFullYear() - 1
 ) {
-	console.log(`🌲 获取模拟森林损失数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
-
 	await new Promise((resolve) => setTimeout(resolve, 300));
 
 	const years = [];
@@ -126,8 +121,6 @@ export async function fetchGFWForestLoss(
  * @returns {Promise<Object>} 森林增益数据
  */
 export async function fetchGFWForestGain(south, west, north, east) {
-	console.log(`🌲 获取模拟森林增益数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
-
 	await new Promise((resolve) => setTimeout(resolve, 400));
 
 	return {
@@ -176,8 +169,6 @@ export async function fetchGFWForestGain(south, west, north, east) {
  * @returns {Promise<Object>} 生物多样性数据
  */
 export async function fetchGFWBiodiversity(south, west, north, east) {
-	console.log(`🌲 获取模拟生物多样性数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
-
 	await new Promise((resolve) => setTimeout(resolve, 350));
 
 	return {
@@ -228,9 +219,7 @@ export async function fetchGFWBiodiversity(south, west, north, east) {
  * @param {number} radius - 半径（公里）
  * @returns {Promise<Object>} 碳储量数据
  */
-export async function fetchGFWCarbon(lat, lng, radius = 10) {
-	console.log(`🌲 获取模拟碳储量数据 - 位置: [${lat}, ${lng}], 半径: ${radius}km`);
-
+export async function fetchGFWCarbon() {
 	await new Promise((resolve) => setTimeout(resolve, 250));
 
 	return {
@@ -251,8 +240,6 @@ export async function fetchGFWCarbon(lat, lng, radius = 10) {
  * @returns {Promise<Object>} 火灾风险数据
  */
 export async function fetchGFWFireRisk(south, west, north, east) {
-	console.log(`🌲 获取模拟火灾风险数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
-
 	await new Promise((resolve) => setTimeout(resolve, 200));
 
 	return {
@@ -304,8 +291,6 @@ export async function fetchGFWFireRisk(south, west, north, east) {
  * @returns {Promise<Object>} 森林数据和应用格式数据
  */
 export async function fetchRegionGFWData(south, west, north, east) {
-	console.log(`🌲 获取 GFW 森林数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
-
 	// 获取指定区域的森林数据
 	const [cover, loss, biodiversity] = await Promise.all([
 		fetchGFWForestCover((south + north) / 2, (west + east) / 2, 50),
@@ -316,11 +301,8 @@ export async function fetchRegionGFWData(south, west, north, east) {
 	const regionData = { cover, loss, biodiversity };
 	const appData = convertGFWToAppFormat(regionData);
 
-	console.log(`✅ 成功获取 ${appData.length} 个森林区域`);
-
 	// 计算统计信息
 	const totalArea = appData.reduce((sum, item) => sum + item.area, 0);
-	console.log(`📊 总面积: ${(totalArea / 1000000).toFixed(2)} km²`);
 
 	// 自动保存数据到文件
 	const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -357,8 +339,6 @@ export async function fetchRegionGFWData(south, west, north, east) {
  * @returns {Promise<Object>} 综合森林数据
  */
 export async function fetchChinaGFWData() {
-	console.log('🌲 开始获取中国森林区域 GFW 模拟数据...');
-
 	// 中国主要森林区域边界
 	const forestRegions = {
 		东北林区: { south: 41.0, west: 120.0, north: 53.0, east: 135.0 },
@@ -370,8 +350,6 @@ export async function fetchChinaGFWData() {
 	const results = {};
 
 	for (const [region, bbox] of Object.entries(forestRegions)) {
-		console.log(`📊 处理 ${region} 数据...`);
-
 		try {
 			const [cover, loss, biodiversity] = await Promise.all([
 				fetchGFWForestCover((bbox.south + bbox.north) / 2, (bbox.west + bbox.east) / 2, 100),
@@ -385,15 +363,10 @@ export async function fetchChinaGFWData() {
 				biodiversity,
 				bbox
 			};
-
-			console.log(`✅ ${region} 数据获取完成`);
 		} catch (error) {
-			console.error(`❌ ${region} 数据获取失败:`, error.message);
 			results[region] = { error: error.message };
 		}
 	}
-
-	console.log('🎉 所有中国森林区域数据获取完成');
 }
 
 /**
@@ -406,9 +379,6 @@ export async function fetchChinaGFWData() {
  * @returns {Promise<Object>} 森林数据
  */
 export async function fetchGFWRegionData(south, west, north, east, dataTypes = '123') {
-	console.log(`🌲 获取 GFW 森林数据 - 区域: [${south}, ${west}, ${north}, ${east}]`);
-	console.log(`📊 数据类型: ${dataTypes} (1=森林覆盖, 2=森林损失, 3=生物多样性)`);
-
 	// 根据数据类型决定获取哪些数据
 	const promises = [];
 	const selectedDataTypes = [];
@@ -444,11 +414,8 @@ export async function fetchGFWRegionData(south, west, north, east, dataTypes = '
 
 	const appData = convertGFWToAppFormat(regionData);
 
-	console.log(`✅ 成功获取 ${appData.length} 个森林区域`);
-
 	// 计算统计信息
 	const totalArea = appData.reduce((sum, item) => sum + item.area, 0);
-	console.log(`📊 总面积: ${(totalArea / 1000000).toFixed(2)} km²`);
 
 	// 自动保存数据到文件
 	const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -567,11 +534,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 	const dataTypes = process.argv[6] || '123';
 
 	await fetchGFWRegionData(south, west, north, east, dataTypes)
-		.then((data) => {
-			console.log('🎉 GFW 森林数据获取完成');
-		})
-		.catch((error) => {
-			console.error('获取 GFW 数据失败:', error);
+		.then(() => {})
+		.catch(() => {
 			process.exit(1);
 		});
 }
