@@ -71,8 +71,14 @@
 								zoom = 9; // 中等区域
 							} else if (maxDimension > 0.1) {
 								zoom = 10; // 小区域
-							} else {
+							} else if (maxDimension > 0.05) {
 								zoom = 11; // 非常小的区域
+							} else if (maxDimension > 0.02) {
+								zoom = 12; // 极小的区域
+							} else if (maxDimension > 0.01) {
+								zoom = 13; // 超小的区域
+							} else {
+								zoom = 14; // 最小的区域
 							}
 
 							mapInstance.flyTo({
