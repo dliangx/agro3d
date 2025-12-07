@@ -191,6 +191,7 @@
 		width: 100%;
 		height: 100vh;
 		position: absolute;
+		z-index: 1;
 	}
 	#scene {
 		width: 100%;
@@ -199,6 +200,7 @@
 		top: 0;
 		left: 0;
 		transition: opacity 0.8s ease;
+		z-index: 0;
 	}
 	.modal-overlay {
 		position: fixed;
