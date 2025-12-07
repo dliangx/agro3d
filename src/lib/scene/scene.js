@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { Tree, TreePreset } from '@dgreenheck/ez-tree';
+import { Tree, TreePreset } from '../tree/tree.js';
 import { Environment } from './environment';
 
 function sleep(ms) {

@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { Pane } from 'tweakpane';
-import { BarkType, Billboard, LeafType, TreePreset, Tree, TreeType } from '@dgreenheck/ez-tree';
+import { BarkType, Billboard, LeafType, TreePreset, Tree, TreeType } from '../tree/tree.js';
 import { Environment } from './environment';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { version } from '../../package.json';
@@ -25,7 +25,7 @@ export function setupUI(tree, environment, renderer, scene, camera, controls, in
   pane?.off('change');
   pane?.dispose();
 
-  pane = new Pane({ container: document.getElementById('ui-container'), title: 'EZ Tree' });
+  pane = new Pane({ container: document.getElementById('ui-container'), title: 'Tree' });
 
   const onChange = () => {
     tree.generate();
