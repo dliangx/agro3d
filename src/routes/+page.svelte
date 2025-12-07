@@ -158,6 +158,7 @@
 
 <div id="container">
 	<div id="map"></div>
+	<div id="scene"></div>
 	<TreeMenu items={testTreeData} {mapInstance} {drawPolygon} />
 </div>
 
@@ -189,8 +190,16 @@
 	#map {
 		width: 100%;
 		height: 100vh;
+		position: absolute;
 	}
-
+	#scene {
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		transition: opacity 0.8s ease;
+	}
 	.modal-overlay {
 		position: fixed;
 		top: 0;
