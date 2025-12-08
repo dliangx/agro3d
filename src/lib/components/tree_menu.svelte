@@ -3,6 +3,7 @@
 	import closeIcon from '$lib/assets/close.png';
 	import menuIcon from '$lib/assets/menu.png';
 	import { Geometry } from '$lib/util/geometry.js';
+	import { initScene } from '$lib/scene/main.js';
 
 	let { items = [], mapInstance, drawPolygon } = $props();
 
@@ -108,7 +109,7 @@
 		<ul class="content-list" onscroll={handleScroll}>
 			{#each items as item, index (item.name)}
 				<li class="content-item {activeIndex === index ? 'active' : ''}">
-					<TreeContent {...item} />
+					<TreeContent {...item} onclick={() => initScene(item.species, item.stage)} />
 				</li>
 			{/each}
 		</ul>
@@ -126,6 +127,7 @@
 		padding: 8px;
 		border-radius: 4px;
 		background: rgba(0, 0, 0, 0.7);
+		z-index: 2;
 	}
 
 	.toggle-button:hover {

@@ -157,6 +157,10 @@
 </script>
 
 <div id="container">
+	<div id="loading-screen">
+		<img id="logo" src="logo.png" alt="scene_logo"/>
+		<div id="loading-text">LOADING... 0%</div>
+	</div>
 	<div id="map"></div>
 	<div id="scene"></div>
 	<TreeMenu items={testTreeData} {mapInstance} {drawPolygon} />
@@ -189,9 +193,41 @@
 	}
 	#map {
 		width: 100%;
-		height: 100vh;
+		height: 100%;
 		position: absolute;
+		z-index: 2;
+	}
+
+	#loading-screen {
+		background-image: url('/background.webp');
+		width: 100%;
+		height: 100%;
+		position: fixed;
 		z-index: 1;
+		background-repeat: no-repeat;
+		background-size: cover;
+		background-position: center;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex-direction: column;
+		padding: 64px;
+		box-sizing: border-box;
+	}
+
+	#logo {
+		position: relative;
+		margin: 64px;
+		width: 100%;
+		max-width: 600px;
+		aspect-ratio: 1 / 1;
+		clip-path: inset(100% 0 0 0);
+		will-change: clip-path;
+	}
+
+	#loading-text {
+		font-size: 5em;
+		color: white;
 	}
 	#scene {
 		width: 100%;

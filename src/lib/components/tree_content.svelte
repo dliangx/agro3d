@@ -1,9 +1,9 @@
 <script>
 	import treeDefault from '$lib/assets/tree_default.png';
-	let { name = '', area = 0.0, species = '', imageFile = '', stage = '' } = $props();
+	let { name = '', area = 0.0, species = '', imageFile = '', stage = '', onclick } = $props();
 </script>
 
-<div class="tree-content">
+<div class="tree-content" onclick={() => onclick && onclick()} >
 	<img src={imageFile || treeDefault} alt="Tree" />
 	<h2>{name}</h2>
 	<div class="info-row">
@@ -17,7 +17,7 @@
 	<div class="info-row">
 		<span class="label">Stage:</span>
 		<span class="value">{stage}</span>
-	</div>
+</div>
 </div>
 
 <style>
@@ -27,6 +27,7 @@
 		line-height: 1.6;
 
 		background: rgba(255, 255, 255, 0.05);
+		cursor: pointer;
 	}
 
 	.tree-content img {
