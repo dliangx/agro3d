@@ -3,94 +3,71 @@ import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { setupUI } from './ui';
 import { createScene } from './scene';
 
-// Ensure a defined global flag (avoids implicit global usage)
-window.isAudioPlaying = window.isAudioPlaying ?? false;
 
-/**
- * Stable, named toggle function so it can be added/removed as an event listener
- */
-function toggleAudio() {
-  const appEl = document.getElementById('app');
-  if (appEl) {
-    appEl.removeEventListener('click', toggleAudio);
-  }
+export async function initScene(preset, mixed) {
+  // initialization log removed to satisfy linting rules
+  
+	const container = document.getElementById('scene');
+	if (!container) return;
 
-  const audioStatusEl = document.getElementById('audio-status');
-  const backgroundAudioEl = /** @type {HTMLMediaElement | null} */ (document.getElementById('background-audio'));
+	const renderer = new THREE.WebGLRenderer({ antialias: true });
+	renderer.setClearColor(0);
+	renderer.setSize(container.clientWidth, container.clientHeight);
+	renderer.setPixelRatio(window.devicePixelRatio);
+	renderer.shadowMap.enabled = true;
+	renderer.shadowMap.type = THREE.PCFShadowMap;
+	renderer.toneMapping = THREE.NeutralToneMapping;
+	renderer.toneMappingExposure = 2;
+	container.appendChild(renderer.domElement);
 
-  if (window.isAudioPlaying) {
-    window.isAudioPlaying = false;
-    if (audioStatusEl) audioStatusEl.src = 'icon_muted.png';
-    if (backgroundAudioEl) backgroundAudioEl.pause();
-  } else {
-    window.isAudioPlaying = true;
-    if (audioStatusEl) audioStatusEl.src = 'icon_playing.png';
-    if (backgroundAudioEl) backgroundAudioEl.play();
-  }
+	const { scene, environment, tree, camera, controls } = await createScene(renderer, preset, mixed);
+
+	// Hide the map layer (if present) so the 3D scene is visible
+	const mapEl = document.getElementById('map');
+	if (mapEl) {
+		mapEl.style.display = 'none';
+		mapEl.style.pointerEvents = 'none';
+	}
+
+	const composer = new EffectComposer(renderer);
+
+	composer.addPass(new RenderPass(scene, camera));
+
+	const smaaPass = new SMAAPass(
+		container.clientWidth * renderer.getPixelRatio(),
+		container.clientHeight * renderer.getPixelRatio()
+	);
+	composer.addPass(smaaPass);
+
+	composer.addPass(new OutputPass());
+
+	const clock = new THREE.Clock();
+	function animate() {
+		// Update time for wind sway shaders
+		const t = clock.getElapsedTime();
+		tree.update(t);
+		scene.getObjectByName('Forest').children.forEach((o) => o.update(t));
+		environment.update(t);
+
+		controls.update();
+		composer.render();
+		requestAnimationFrame(animate);
+	}
+
+	function resize() {
+		renderer.setSize(container.clientWidth, container.clientHeight);
+		smaaPass.setSize(container.clientWidth, container.clientHeight);
+		composer.setSize(container.clientWidth, container.clientHeight);
+		camera.aspect = container.clientWidth / container.clientHeight;
+		camera.updateProjectionMatrix();
+	}
+
+	window.addEventListener('resize', resize);
+
+	// setupUI(tree, environment, renderer, scene, camera, controls, 'Ash Medium');
+	animate();
+	resize();
+
 }
-// expose for other scripts
-window.toggleAudio = toggleAudio;
-
-document.addEventListener('DOMContentLoaded', async () => {
-  const container = document.getElementById('app');
-  if (!container) return;
-
-  // User needs to interact with the page before audio will play
-  container.addEventListener('click', toggleAudio);
-
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setClearColor(0);
-  renderer.setSize(container.clientWidth, container.clientHeight);
-  renderer.setPixelRatio(window.devicePixelRatio);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFShadowMap;
-  renderer.toneMapping = THREE.NeutralToneMapping;
-  renderer.toneMappingExposure = 2;
-  container.appendChild(renderer.domElement);
-
-  const { scene, environment, tree, camera, controls } = await createScene(renderer);
-
-  const composer = new EffectComposer(renderer);
-
-  composer.addPass(new RenderPass(scene, camera));
-
-  const smaaPass = new SMAAPass(
-    container.clientWidth * renderer.getPixelRatio(),
-    container.clientHeight * renderer.getPixelRatio());
-  composer.addPass(smaaPass);
-
-  composer.addPass(new OutputPass());
-
-  const clock = new THREE.Clock();
-  function animate() {
-    // Update time for wind sway shaders
-    const t = clock.getElapsedTime();
-    tree.update(t);
-    scene.getObjectByName('Forest').children.forEach((o) => o.update(t));
-    environment.update(t);
-
-    controls.update();
-    composer.render();
-    requestAnimationFrame(animate);
-  }
-
-  function resize() {
-    renderer.setSize(container.clientWidth, container.clientHeight);
-    smaaPass.setSize(container.clientWidth, container.clientHeight);
-    composer.setSize(container.clientWidth, container.clientHeight);
-    camera.aspect = container.clientWidth / container.clientHeight;
-    camera.updateProjectionMatrix();
-  }
-
-  window.addEventListener('resize', resize);
-
-  setupUI(tree, environment, renderer, scene, camera, controls, 'Ash Medium');
-  animate();
-  resize();
-
-  const audioStatusEl = document.getElementById('audio-status');
-  if (audioStatusEl) audioStatusEl.style.display = 'block';
-});

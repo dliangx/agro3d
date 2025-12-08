@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { degToRad } from 'three/src/math/MathUtils.js';
-import fragmentShader from './shaders/skybox.frag?raw';
-import vertexShader from './shaders/skybox.vert?raw';
+import fragmentShader from '../shaders/skybox.frag?raw';
+import vertexShader from '../shaders/skybox.vert?raw';
 
 export class SkyboxOptions {
   constructor() {

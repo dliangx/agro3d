@@ -316,7 +316,7 @@ export class Grass extends THREE.Object3D {
       );
 
       // To make code reusable for grass and flowers, conditionally multiply by instanceMatrix
-      let vertexShader = instanced ?
+      const vertexShader = instanced ?
         `
         vec4 mvPosition = instanceMatrix * vec4(transformed, 1.0);
         float windOffset = 2.0 * 3.14 * simplex2d((modelMatrix * mvPosition).xz / uWindScale);

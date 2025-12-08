@@ -148,8 +148,8 @@ export default class TreeOptions {
    * @param {TreeOptions} source 
    */
   copy(source, target = this) {
-    for (let key in source) {
-      if (source.hasOwnProperty(key) && target.hasOwnProperty(key)) {
+    for (const key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key) && Object.prototype.hasOwnProperty.call(target, key)) {
         if (typeof source[key] === 'object' && source[key] !== null) {
           this.copy(source[key], target[key]);
         } else {

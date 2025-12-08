@@ -37,18 +37,18 @@ export function simplex2d(v) {
   );
 
   // Good
-  let x0 = new THREE.Vector2(
+  const x0 = new THREE.Vector2(
     v.x - i.x + C.x * (i.x + i.y),
     v.y - i.y + C.x * (i.x + i.y),
   );
 
   // Good
-  let i1 = new THREE.Vector2(
+  const i1 = new THREE.Vector2(
     (x0.x > x0.y) ? 1.0 : 0.0,
     (x0.x > x0.y) ? 0.0 : 1.0
   );
 
-  let x12 = new THREE.Vector4(
+  const x12 = new THREE.Vector4(
     x0.x + C.x - i1.x,
     x0.y + C.x - i1.y,
     x0.x + C.z,
@@ -89,25 +89,25 @@ export function simplex2d(v) {
   );
 
 
-  let x = new THREE.Vector3(
+  const x = new THREE.Vector3(
     2.0 * ((p.x * C.w) - Math.floor(p.x * C.w)) - 1.0,
     2.0 * ((p.y * C.w) - Math.floor(p.y * C.w)) - 1.0,
     2.0 * ((p.z * C.w) - Math.floor(p.z * C.w)) - 1.0
   );
 
-  let h = new THREE.Vector3(
+  const h = new THREE.Vector3(
     Math.abs(x.x) - 0.5,
     Math.abs(x.y) - 0.5,
     Math.abs(x.z) - 0.5
   )
 
-  let ox = new THREE.Vector3(
+  const ox = new THREE.Vector3(
     Math.floor(x.x + 0.5),
     Math.floor(x.y + 0.5),
     Math.floor(x.z + 0.5)
   );
 
-  let a0 = new THREE.Vector3(
+  const a0 = new THREE.Vector3(
     x.x - ox.x,
     x.y - ox.y,
     x.z - ox.z
@@ -119,7 +119,7 @@ export function simplex2d(v) {
     m.z * (1.79284291400159 - 0.85373472095314 * (a0.z * a0.z + h.z * h.z)),
   );
 
-  let g = new THREE.Vector3(
+  const g = new THREE.Vector3(
     a0.x * x0.x + h.x * x0.y,
     a0.y * x12.x + h.y * x12.y,
     a0.z * x12.z + h.z * x12.w

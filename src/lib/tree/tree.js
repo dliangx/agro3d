@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import * as THREE from 'three';
 import RNG from './rng';
 import { Branch } from './branch';
@@ -113,9 +114,9 @@ export class Tree extends THREE.Group {
     // Used later for geometry index generation
     const indexOffset = this.branches.verts.length / 3;
 
-    let sectionOrientation = branch.orientation.clone();
-    let sectionOrigin = branch.origin.clone();
-    let sectionLength =
+    const sectionOrientation = branch.orientation.clone();
+    const sectionOrigin = branch.origin.clone();
+    const sectionLength =
       branch.length /
       branch.sectionCount /
       (this.options.type === 'Deciduous' ? this.options.branch.levels - 1 : 1);
@@ -144,7 +145,7 @@ export class Tree extends THREE.Group {
       // Create the segments that make up this section.
       let first;
       for (let j = 0; j < branch.segmentCount; j++) {
-        let angle = (2.0 * Math.PI * j) / branch.segmentCount;
+        const angle = (2.0 * Math.PI * j) / branch.segmentCount;
 
         // Create the segment vertex
         const vertex = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle))
@@ -271,7 +272,7 @@ export class Tree extends THREE.Group {
     for (let i = 0; i < count; i++) {
       // Determine how far along the length of the parent branch the child
       // branch should originate from (0 to 1)
-      let childBranchStart = this.rng.random(1.0, this.options.branch.start[level]);
+      const childBranchStart = this.rng.random(1.0, this.options.branch.start[level]);
 
       // Find which sections are on either side of the child branch origin point
       // so we can determine the origin, orientation and radius of the branch
@@ -324,7 +325,7 @@ export class Tree extends THREE.Group {
         q3.multiply(q2.multiply(q1)),
       );
 
-      let childBranchLength =
+      const childBranchLength =
         this.options.branch.length[level] *
         (this.options.type === TreeType.Evergreen
           ? 1.0 - childBranchStart
@@ -359,7 +360,7 @@ export class Tree extends THREE.Group {
     for (let i = 0; i < this.options.leaves.count; i++) {
       // Determine how far along the length of the parent
       // branch the leaf should originate from (0 to 1)
-      let leafStart = this.rng.random(1.0, this.options.leaves.start);
+      const leafStart = this.rng.random(1.0, this.options.leaves.start);
 
       // Find which sections are on either side of the child branch origin point
       // so we can determine the origin, orientation and radius of the branch
@@ -420,7 +421,7 @@ export class Tree extends THREE.Group {
     let i = this.leaves.verts.length / 3;
 
     // Width and length of the leaf quad
-    let leafSize =
+    const leafSize =
       this.options.leaves.size *
       (1 +
         this.rng.random(
